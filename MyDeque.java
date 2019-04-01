@@ -1,4 +1,4 @@
-
+import java.util.*;
 public class MyDeque<E>{
   private E[] data;
   private int size, start, end;
@@ -6,14 +6,14 @@ public class MyDeque<E>{
   @SuppressWarnings("unchecked")
   public MyDeque(){
     data = (E[])new Object[10];
-    size = 10;
+    size = 0;
     start = 0;
     end = 0;
   }
   @SuppressWarnings("unchecked")
   public MyDeque(int initialCapacity){
     data = (E[])new Object[initialCapacity];
-    size = initialCapacity;
+    size = 0;
     start = 0;
     end = 0;
   }
@@ -35,7 +35,7 @@ public class MyDeque<E>{
       for(int i = start; i < end; i++){
         ans += data[i] + " ";
       }
-      return ans + " ";
+      return ans + "}";
     } else {
       for(int i = start; i < size; i++){
         ans += data[i] + " ";
@@ -56,131 +56,110 @@ public class MyDeque<E>{
     return true;
   }
 
-
-  public void addFirst(E element){
-    if(isFull){
-      resize();
-      //resize always sets start to 0
-      start = data.length - 1;
-      data start = element;
-    } else {
-      start--;
-      if(start > 0){
-      data[start] = element;
-    } else {
-      start += data.length;
-      data[start] = element;
-    }
-    }
-  }
-
-
-  public void addLast(E element){
-    if(isFull){
-      resize();
-      end ++;
-      data[end] = element;
-    } else {
-      if(end == data.length - 1){
-        end = 0;
-        data[end] = element;
-      } else {
-        end++;
-        data[end] = element;
+  @SuppressWarnings("unchecked")
+  private void resize(){
+    E[] extra = data;
+    data = (E[])new Object[data.length + 10];
+    int i = start;
+    int j = 0;
+    if(size != 0){
+      if(end >= start){
+        while(i <= end){
+          data[j] = extra[i];
+          i++;
+          j++;
+        }
+      }
+      else{
+        while(end >= i){
+          data[j]=extra[i];
+          i++;
+          j++;
+          if(i == data.length) i = 0;
+        }
       }
     }
   }
 
-  @SuppressWarnings("unchecked")
-  public E removeFirst(){
-    errorIfEmpty();
-       int elementIndex = getQueueIndex();
-       E objectRetrieved = (E) data[elementIndex];
-       // Make the element at the index null so there isn't a memory leak
-       data[elementIndex] = null;
-       startIndex = elementIndex;
-       size--;
-       return objectRetrieved;
- }
 
-
-  public E removeLast(){
-    errorIfEmpty();
-        int elementIndex = getStackIndex();
-        @SuppressWarnings("unchecked")
-        T objectRetrieved = (T) data[elementIndex];
-        // Make the element at the index null so there isn't a memory leak
-        data[elementIndex] = null;
-        endIndex = elementIndex;
-        size--;
-        return objectRetrieved;
-  }
-
-
-  public E getFirst(){
-    errorIfEmpty();
-       return (E) data[start];
-  }
-
-
-
-
-
-  public E getLast(){
-    errorIfEmpty();
-    return (E) data[start];
-  }
-
-
-
-  @SuppressWarnings("unchecked")
-  private void reSize(){
-    //if size is 0 make it one
-    if(size == 0){
-      data = new(E[])new Object[1];
+  public void addFirst(E element) throws NullPointerException{
+    if(element == null) throw new NullPointerException("Cant' add a null element.");
+    if(data.length == size)
+      resize();
+    size++;
+    if(start == -1){
       start = 0;
       end = 0;
-      return;
+      data[0] = element;
     }
-    //make a copy array with double the size
-    E[] dataCopy = new(E[])new Object[size];
-    if(size == 1){
-      dataCopy[start] = data[start]
-      data = new(E[])new Object[size * 2];
-      start = 0;
-      end = 1;
-
-      return;
+    else if(start == 0){ 
+      data[start = data.length-1] = element;
     }
-
-    //for new cases, copy data into dataCopy
-    dataCopy = Arrays.copy(data);
-    //Then clear data();
-    data = new int[size *2];
-    size = size * 2;
-    //NOW see if end > start and such
-    if(end > start){
-      for(int i = start; i <= end; i++){
-        data[i - start] = dataCopy[i];
-      }
-    } else {
-      for(int i = start; i < dataCopy.length; i++){
-          data[i - start] = dataCopy[i];
-      }
-      for(int i = 0; i <= end; i++){
-        data[i + (data.length - start)] = dataCopy[i];
-      }
+    else{
+      data[--start] = element;
     }
-    start = 0;
-    end = dataCopy.length - 1;
-    //now redo start and end
-
-    //copy all the starts into the beginning, then make the array in order again cuz y not
-
   }
-    private void errorIfEmpty() {
-    if (size == 0) {
-        throw new NoSuchElementException();
+
+
+  public void addLast(E element) throws NoSuchElementException{
+    if(element == null) throw new NullPointerException("Can't add a null element.");
+    if(data.length == size) resize();
+    size++;
+    if(start == -1){
+      start = 0;
+      end = 0;
+      data[0] = element;
     }
+    else if(end == data.length - 1)
+      data[end = 0] = element;
+    else
+      data[++end] = element;
+  }
+
+
+  public E removeFirst() throws NoSuchElementException{
+    if(size == 0) throw new NoSuchElementException ("Can't remove from empty deque.");
+    size--;
+    if(start == end){
+      int temp = start;
+      start=-1;
+      end=-1;
+      return data[temp];
+    }
+    else if(start == data.length - 1){
+      start = 0;
+      return data[data.length - 1];
+    }
+    start++;
+    return data[start - 1];
+  }
+
+
+  public E removeLast() throws NoSuchElementException{
+    if(size ==0) throw new NoSuchElementException ("Can't remove from an empty deque.");
+    size--;
+    if(start == end){
+      int temp = start;
+      start =- 1;
+      end =- 1;
+      return data[temp];
+    }
+    else if(end == 0){
+      end = data.length - 1;
+      return data[0];
+    }
+    return data[end--];
+  }
+
+
+  public E getFirst() throws NoSuchElementException{
+    if(size == 0) throw new NoSuchElementException("Can't get element of an empty deque.");
+    return data[start];
+  }
+
+
+  public E getLast() throws NoSuchElementException{
+    if(size == 0) throw new NoSuchElementException("Can't get element of an empty deque.");
+    return data[end];
   }
 }
